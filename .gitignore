@@ -13,5 +13,10 @@ build
 .vite
 *.tsbuildinfo
 
+# generated per-build (produced by scripts/build-manifest.mjs, attached to releases)
+dist-manifest.txt
+dist-digest.txt
+dist.zip
+
 # os
 .DS_Store

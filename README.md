@@ -53,6 +53,28 @@ The build makes **zero external font/CDN requests** (fonts are self-hosted via
 Fontsource; a Vite plugin strips a remote font `@import` a dependency bundles),
 so it works under a strict CSP and content-addressed hosting.
 
+## Verify a release
+
+Every tagged release is built by CI from this exact source and ships a
+`dist-manifest.txt` (a SHA-256 of every built file), a `dist-digest.txt` (one
+hash over that manifest — the release fingerprint), and signed build provenance.
+
+Because the frontend is open source **and** the build is deterministic, anyone
+can confirm a deployment matches the audited source:
+
+```bash
+git checkout <tag>                       # e.g. v1.0.0
+bun install --frozen-lockfile            # bun version pinned in .bun-version
+VITE_API_URL=https://api.suisec.app bun run build
+bun scripts/build-manifest.mjs           # → dist-manifest.txt + dist-digest.txt
+```
+
+Compare your `dist-digest.txt` with the one attached to the GitHub Release — if
+they match, your build is bit-for-bit identical to the released bundle. Identical
+result requires identical inputs: same source, same locked deps, and the same
+build-time `VITE_*` values shown above (they are public). You can also fetch what
+the live site serves and hash it against `dist-manifest.txt`.
+
 ## Configuration
 
 All configuration is public build-time `VITE_*` env — see
