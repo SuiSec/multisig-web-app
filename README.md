@@ -29,6 +29,10 @@ sdk/   @mysten/sagat — the client-side relay API contract (types + client)
 
 Both are workspaces of this repo; the app resolves the SDK locally.
 
+> `sdk/` is the API contract shared with the (closed-source) coordination relay
+> and is maintained upstream alongside it. Treat it as **read-only** here —
+> frontend changes should not modify it; contract changes land via the relay.
+
 ## Develop
 
 Requires [Bun](https://bun.sh) and Node ≥ 22 (for `wrangler` if you deploy).
