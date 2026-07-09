@@ -1,0 +1,17 @@
+# deps
+node_modules
+
+# env (never commit real values — see app/.env.example)
+.env
+.env.local
+.env.*.local
+
+# build output
+dist
+build
+.output
+.vite
+*.tsbuildinfo
+
+# os
+.DS_Store

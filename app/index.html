@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0"
+		/>
+		<title>MultiSig — Sui Multisig Console</title>
+		<meta
+			name="description"
+			content="Non-custodial multisig console for Sui blockchain. Create shared wallets, coordinate transactions, publish and verify Move smart contracts with Walrus source archival. No keys held by the relay."
+		/>
+		<link
+			rel="canonical"
+			href="https://multisig.suisec.app"
+		/>
+		<meta property="og:type" content="website" />
+		<meta
+			property="og:url"
+			content="https://multisig.suisec.app"
+		/>
+		<meta
+			property="og:title"
+			content="MultiSig — Non-Custodial Sui Multisig Console"
+		/>
+		<meta
+			property="og:description"
+			content="Coordinate Sui multisig transactions without giving up your keys. Shared wallets, proposal signing, Move package verification via Walrus. Built for Sui teams."
+		/>
+		<meta
+			property="og:image"
+			content="https://multisig.suisec.app/logo.png"
+		/>
+		<meta
+			property="og:site_name"
+			content="MultiSig by SuiSec"
+		/>
+		<meta
+			name="twitter:card"
+			content="summary_large_image"
+		/>
+		<meta
+			name="twitter:title"
+			content="MultiSig — Non-Custodial Sui Multisig Console"
+		/>
+		<meta
+			name="twitter:description"
+			content="Coordinate Sui multisig without giving up your keys. Move package verification via Walrus."
+		/>
+		<meta
+			name="twitter:image"
+			content="https://multisig.suisec.app/logo.png"
+		/>
+		<link rel="icon" href="/favicon.ico" sizes="any" />
+		<link rel="apple-touch-icon" href="/logo.png" />
+		<meta
+			name="theme-color"
+			content="#F4F7FB"
+			media="(prefers-color-scheme: light)"
+		/>
+		<meta
+			name="theme-color"
+			content="#0A1426"
+			media="(prefers-color-scheme: dark)"
+		/>
+		<!-- Fonts are self-hosted via Fontsource (imported in src/main.tsx) —
+		     no external font CDN, so no user-IP leak and no CSP breakage. -->
+		<script>
+			// Apply theme before first paint to avoid a flash.
+			// Light is the default to match the "Vault" Light system.
+			(function () {
+				try {
+					var t = localStorage.getItem('theme');
+					var dark =
+						t === 'dark' ||
+						(t === 'system' &&
+							matchMedia('(prefers-color-scheme: dark)')
+								.matches);
+					document.documentElement.classList.toggle(
+						'dark',
+						!!dark,
+					);
+				} catch (e) {}
+			})();
+		</script>
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "SoftwareApplication",
+				"name": "MultiSig",
+				"alternateName": "suisec MultiSig",
+				"url": "https://multisig.suisec.app",
+				"applicationCategory": "FinanceApplication",
+				"operatingSystem": "Web, Chrome Extension",
+				"description": "A non-custodial console for coordinating Sui blockchain multisig transactions. Teams compose shared wallets from member public keys, propose transactions, collect threshold signatures, and execute on-chain. The relay stores proposals and partial signatures but never holds private keys. Move smart contract source code is archived to Walrus decentralized storage and cryptographically linked to on-chain package IDs for public verification.",
+				"featureList": [
+					"Non-custodial multisig wallet creation",
+					"Threshold signature coordination",
+					"Move smart contract source code verification",
+					"Walrus decentralized source archival",
+					"Browser extension for dApp injection",
+					"Chain-anchored package verification portal",
+					"Mainnet and testnet support"
+				],
+				"offers": {
+					"@type": "Offer",
+					"price": "0",
+					"priceCurrency": "USD"
+				},
+				"provider": {
+					"@type": "Organization",
+					"name": "SuiSec",
+					"url": "https://suisec.app",
+					"sameAs": ["https://x.com/suisecurity"]
+				},
+				"audience": {
+					"@type": "Audience",
+					"audienceType": "Sui blockchain developers and organizations"
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<div id="root"></div>
+		<script type="module" src="/src/main.tsx"></script>
+	</body>
+</html>

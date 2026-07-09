@@ -1,0 +1,182 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * MultiSig — "Vault" design system.
+ * Light Minimal (Direction B): white cards · navy text · #2563EB accent.
+ * Dark Institutional (Direction A): deep navy · #3B82F6 accent.
+ * Tokens mirror the design spec exactly; mapped onto shadcn-compatible
+ * variable names so the UI kit drops in cleanly.
+ *
+ * Type: Space Grotesk (display) · IBM Plex Sans (UI) · IBM Plex Mono (data).
+ */
+@theme inline {
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-card-alt: var(--card-alt);
+	--color-sidebar: var(--sidebar);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-faint: var(--faint);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(
+		--destructive-foreground
+	);
+	--color-success: var(--success);
+	--color-warning: var(--warning);
+	--color-border: var(--border);
+	--color-border-soft: var(--border-soft);
+	--color-input: var(--input);
+	--color-field: var(--field);
+	--color-ring: var(--ring);
+	--font-sans:
+		'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+	--font-display:
+		'Space Grotesk', 'IBM Plex Sans', sans-serif;
+	--font-mono:
+		'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Light (default) — Direction B */
+:root {
+	color-scheme: light;
+	--radius: 0.625rem;
+	--background: #f4f7fb;
+	--foreground: #0b1a33;
+	--card: #ffffff;
+	--card-foreground: #0b1a33;
+	--card-alt: #f0f5fc;
+	--sidebar: #ffffff;
+	--popover: #ffffff;
+	--popover-foreground: #0b1a33;
+	--primary: #2563eb;
+	--primary-foreground: #ffffff;
+	--secondary: #f0f5fc;
+	--secondary-foreground: #0b1a33;
+	--muted: #f0f5fc;
+	--muted-foreground: #5b6b85;
+	--faint: #94a3b8;
+	--accent: #f0f5fc;
+	--accent-foreground: #0b1a33;
+	--destructive: #dc2626;
+	--destructive-foreground: #ffffff;
+	--success: #059669;
+	--warning: #d97706;
+	--border: #e3e9f2;
+	--border-soft: #eef2f8;
+	--input: #e3e9f2;
+	--field: #f4f7fb;
+	--ring: #2563eb;
+	--shadow-card: 0 1px 2px rgba(11, 26, 51, 0.05);
+}
+
+/* Dark — Direction A */
+.dark {
+	color-scheme: dark;
+	--background: #0a1426;
+	--foreground: #e8eef8;
+	--card: #0f1b30;
+	--card-foreground: #e8eef8;
+	--card-alt: #102443;
+	--sidebar: #070e1c;
+	--popover: #0f1b30;
+	--popover-foreground: #e8eef8;
+	--primary: #3b82f6;
+	--primary-foreground: #ffffff;
+	--secondary: #102443;
+	--secondary-foreground: #e8eef8;
+	--muted: #102443;
+	--muted-foreground: #8fa3c0;
+	--faint: #5a6e8c;
+	--accent: #102443;
+	--accent-foreground: #e8eef8;
+	--destructive: #f87171;
+	--destructive-foreground: #06281c;
+	--success: #34d399;
+	--warning: #fbbf24;
+	--border: #1e3252;
+	--border-soft: rgba(30, 50, 82, 0.55);
+	--input: #1e3252;
+	--field: #0b1526;
+	--ring: #3b82f6;
+	--shadow-card: none;
+}
+
+* {
+	border-color: var(--border);
+}
+
+html {
+	background-color: var(--background);
+}
+
+body {
+	background-color: var(--background);
+	color: var(--foreground);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	margin: 0;
+	min-height: 100vh;
+	transition:
+		background-color 0.2s ease,
+		color 0.2s ease;
+}
+
+::selection {
+	background: color-mix(
+		in srgb,
+		var(--primary) 28%,
+		transparent
+	);
+}
+
+/* Soft card shadow (light only; flattens in dark). */
+.shadow-card {
+	box-shadow: var(--shadow-card);
+}
+
+/* Slim, themed scrollbars */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--border) transparent;
+}
+*::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+	background: var(--border);
+	border-radius: 8px;
+}
+
+/* Tabular figures for addresses, amounts, weights. */
+.font-mono {
+	font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+		scroll-behavior: auto !important;
+	}
+}

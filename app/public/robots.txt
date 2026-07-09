@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /multisig/
+Disallow: /capture
+Disallow: /create
+Disallow: /invitations
+Disallow: /apps
+
+Sitemap: https://multisig.suisec.app/sitemap.xml
