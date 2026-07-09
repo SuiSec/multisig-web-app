@@ -297,7 +297,7 @@ export function MoveArtifactInput({
 					{...({
 						webkitdirectory: '',
 						directory: '',
-					} as any)}
+					} as Record<string, string>)}
 				/>
 				<button
 					type="button"
