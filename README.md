@@ -75,4 +75,11 @@ sends data (with your own key) when you explicitly click.
 ## License
 
 [Apache-2.0](LICENSE). Portions of `sdk/` are adapted from Mysten Labs' Sagat
-(Apache-2.0).
+(Apache-2.0); see [NOTICE](NOTICE).
+
+## Trademark
+
+The code is Apache-2.0, but the **SuiSec / MultiSig names, logos, and
+`*.suisec.app` domains are not** — see [TRADEMARK.md](TRADEMARK.md). You may fork
+and self-host freely, but a public deployment of a modified version must
+rebrand.

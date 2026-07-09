@@ -1,0 +1,11 @@
+MultiSig — web frontend
+Copyright 2026 SuiSec
+
+This product includes software developed by SuiSec
+(https://multisig.suisec.app).
+
+Portions of sdk/ (the @mysten/sagat client) are adapted from Mysten Labs' Sagat,
+Copyright (c) Mysten Labs, Inc., licensed under the Apache License, Version 2.0.
+
+"SuiSec" and "MultiSig", the project logos, and the *.suisec.app domains are
+trademarks of SuiSec and are not licensed under Apache-2.0. See TRADEMARK.md.
