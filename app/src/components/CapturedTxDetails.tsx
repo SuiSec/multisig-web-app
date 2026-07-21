@@ -35,6 +35,7 @@ import {
 	coinTypeArgIndices,
 	formatParam,
 	type OpenSignature,
+	type ParamRisk,
 } from '../lib/paramRisk';
 import {
 	decodePure,
@@ -279,7 +280,7 @@ function LabeledArg({
 	network,
 }: {
 	label: string;
-	risk?: 'high' | 'medium' | 'none';
+	risk?: ParamRisk;
 	arg: AnalyzedCommandArgument;
 	typeName: string | null;
 	network: Network;
@@ -373,7 +374,9 @@ function CommandRow({
 								className={`cursor-help rounded px-1.5 py-0.5 font-mono text-[10.5px] ${
 									p.risk === 'high'
 										? 'bg-destructive/15 text-destructive'
-										: 'bg-warning/15 text-warning'
+										: p.risk === 'medium'
+											? 'bg-warning/15 text-warning'
+											: 'bg-muted text-muted-foreground'
 								}`}
 							>
 								{p.signature}

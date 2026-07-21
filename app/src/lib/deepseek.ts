@@ -37,7 +37,8 @@ export interface TxExplainInput {
 		typeArguments: string[];
 		params: {
 			type: string;
-			risk: 'high' | 'medium' | 'none';
+			/** `info` = a note, not a risk (e.g. a `&Cap` proving authority). */
+			risk: 'high' | 'medium' | 'info' | 'none';
 			reason?: string;
 		}[];
 	}[];
@@ -100,7 +101,12 @@ const SYSTEM_PROMPT =
 	'param, or a `0x2::funds_accumulator::Withdrawal`, is an UNBOUNDED ' +
 	'authorization — the contract may take up to the full balance / the stated ' +
 	'limit; the simulated figure is only the current code path. A `Coin<T>` by ' +
-	'value surrenders the whole coin. A `*Cap` grants privileged authority.\n' +
+	'value surrenders the whole coin. A `*Cap` passed BY VALUE or by `&mut` is ' +
+	'surrendered or modifiable — that IS a risk. A `*Cap` taken by IMMUTABLE ' +
+	'reference (`&Cap`) is merely how an admin entry point is gated: it proves ' +
+	'authority for that one call and is neither transferred nor modified, so it ' +
+	'carries `risk: \'info\'` — describe it under "What it does" if useful, never ' +
+	'as a risk.\n' +
 	'• HIGH severity: an `UpgradeCap`, an admin-named cap, or a DeFi ' +
 	'position / ownership-cap / LP-burn-proof (types ending in ' +
 	'`Position`/`PositionNFT`/`OwnerCap`/`BurnProof`, or a known protocol ' +
@@ -135,7 +141,8 @@ function userPrompt(input: TxExplainInput): string {
 		'DeFi position leaving the multisig — name the object, protocol, and recipient); ' +
 		'a `functionSignatures` param has `risk` of `high` or `medium` (explain its ' +
 		'`reason`); or `withdrawals` lists a ceiling. Do NOT mention checks that passed, ' +
-		'benign `risk: none` params, framework calls, or anything not flagged — omit them ' +
+		'benign `risk: none` or `risk: info` params, framework calls, or anything not ' +
+		'flagged — omit them ' +
 		"entirely rather than noting they're safe. Don't invent risks. If nothing is " +
 		'flagged at all, output just the single line "No obvious risks found" and nothing ' +
 		'else for this section. (A MoveCall is pinned to a package version, so the code ' +

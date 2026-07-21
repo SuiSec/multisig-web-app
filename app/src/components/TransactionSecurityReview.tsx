@@ -12,6 +12,7 @@ import { formatAddress } from '@mysten/sui/utils';
 import {
 	AlertTriangle,
 	CheckCircle2,
+	KeyRound,
 	XCircle,
 } from 'lucide-react';
 import { useMemo } from 'react';
@@ -163,10 +164,20 @@ export function TransactionSecurityReview({
 				?.package,
 		),
 	);
+	// Only spend power counts as "drainable" — a borrowed `&Cap` authorizes the
+	// call, not a withdrawal, so it's reported separately and without alarm. A
+	// Cap handed over by value / `&mut` is a different (still serious) hazard.
 	const drainableInputs = callRisks.reduce(
-		(n, r) => n + r.highCount,
+		(n, r) => n + r.drainCount,
 		0,
 	);
+	const allParams = callRisks.flatMap((r) => r.params);
+	const surrenderedCaps = allParams.filter(
+		(p) => p.kind === 'capability' && p.risk === 'high',
+	).length;
+	const borrowedCaps = allParams.filter(
+		(p) => p.kind === 'capability' && p.risk === 'info',
+	).length;
 
 	// Account-balance withdrawal authorizations carried in the PTB inputs. Each
 	// `limit` is the signed ceiling — the most this signature can withdraw. Shown
@@ -180,10 +191,11 @@ export function TransactionSecurityReview({
 		{};
 
 	// Red is reserved for UNBOUNDED spend power — a &mut Coin / &mut Balance (or
-	// by-value coin) the contract can drain to the full balance. A plain
-	// simulated outflow, or a withdrawal capped by an explicit limit, is not
-	// that, so it stays amber.
-	const hasUnboundedRisk = drainableInputs > 0;
+	// by-value coin) the contract can drain to the full balance — or a capability
+	// surrendered outright. A plain simulated outflow, a withdrawal capped by an
+	// explicit limit, or a merely borrowed `&Cap` is not that, so it stays amber.
+	const hasUnboundedRisk =
+		drainableInputs > 0 || surrenderedCaps > 0;
 	// Pair each MoveCall's full param types with the app's own per-param risk
 	// verdict (from `callRisks`, computed above) so the model EXPLAINS our flags
 	// instead of re-deriving them. `assessCall` already exempts framework calls,
@@ -491,6 +503,25 @@ export function TransactionSecurityReview({
 					</div>
 				)}
 
+				{/* A borrowed `&Cap` is how every admin entry point is gated — it
+				    authorizes this call and nothing more. State it plainly, in
+				    neutral colors: it is context, not a warning. */}
+				{borrowedCaps > 0 && (
+					<div className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs leading-relaxed text-muted-foreground">
+						<KeyRound className="mt-0.5 h-3.5 w-3.5 flex-none" />
+						<span>
+							<span className="font-medium text-foreground">
+								Capability-gated call
+							</span>{' '}
+							— {borrowedCaps} capability object(s) are
+							borrowed by immutable reference (
+							<code className="font-mono">&Cap</code>),
+							proving authority for this call. They are not
+							transferred and cannot be modified.
+						</span>
+					</div>
+				)}
+
 				{/* Simulation is not a cap on the executed outcome. Reads red when
 				    the tx grants unbounded/over-authorized spend power. */}
 				<div
@@ -512,8 +543,8 @@ export function TransactionSecurityReview({
 							<>
 								<span className="font-medium text-foreground">
 									{drainableInputs} input(s) give the
-									contract write access to your
-									coins/objects.
+									contract spend access to your
+									coins/balances.
 								</span>{' '}
 								A{' '}
 								<code className="font-mono">
@@ -526,6 +557,18 @@ export function TransactionSecurityReview({
 								— the contract may withdraw any amount up to
 								the full balance; this transaction does not
 								cap it.{' '}
+							</>
+						) : null}
+						{surrenderedCaps > 0 ? (
+							<>
+								<span className="font-medium text-foreground">
+									{surrenderedCaps} capability object(s) are
+									handed to the contract by value or by{' '}
+									<code className="font-mono">&mut</code>.
+								</span>{' '}
+								The capability itself — not just its
+								authority for this call — is surrendered or
+								modifiable.{' '}
 							</>
 						) : null}
 						The simulated figure reflects the current code

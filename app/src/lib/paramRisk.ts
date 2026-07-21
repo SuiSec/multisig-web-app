@@ -8,7 +8,10 @@
 //     (up to the full balance). Simulation reflects today's code; an upgrade or
 //     state-dependent logic can take more after you sign.
 //   • `Coin<T>` by value — the whole coin is surrendered.
-//   • a `*Cap` capability — privileged authority is granted.
+//   • a `*Cap` capability by value / `&mut` — privileged authority is handed over.
+//   • `&<Cap>` immutable — the call is merely Cap-gated: the capability is
+//     borrowed for the duration of the call, not transferred and not mutated.
+//     Informational, NOT a warning: admin entry points legitimately require it.
 //   • `&mut <object>` — the object's contents can be mutated.
 //   • `&T` immutable / primitives — read-only, benign.
 //
@@ -23,7 +26,13 @@
 
 import { normalizeSuiAddress } from '@mysten/sui/utils';
 
-export type ParamRisk = 'high' | 'medium' | 'none';
+// 'info' is a NOTE, not a warning: something worth naming in the UI (this is a
+// Cap-gated call) that carries no extra authorization beyond the call itself.
+export type ParamRisk = 'high' | 'medium' | 'info' | 'none';
+
+/** What the flagged parameter is, so callers can word their own summaries. */
+export type ParamKind =
+	'coin' | 'withdrawal' | 'capability' | 'object';
 
 const FRAMEWORK_PACKAGES = new Set(
 	['0x1', '0x2', '0x3'].map((a) => normalizeSuiAddress(a)),
@@ -165,6 +174,8 @@ function isAccountWithdrawal(typeName: string): boolean {
 export interface AssessedParam {
 	signature: string;
 	risk: ParamRisk;
+	/** Set whenever `risk !== 'none'`. */
+	kind?: ParamKind;
 	reason?: string;
 }
 
@@ -180,6 +191,7 @@ export function assessParam(
 			return {
 				signature,
 				risk: 'high',
+				kind: 'coin',
 				reason:
 					'Mutable coin/balance reference — the contract can withdraw any amount; the figure shown is only the current code’s behavior and may change.',
 			};
@@ -187,6 +199,7 @@ export function assessParam(
 			return {
 				signature,
 				risk: 'high',
+				kind: 'coin',
 				reason:
 					'Coin/balance passed by value — the entire object is surrendered to the contract.',
 			};
@@ -196,22 +209,39 @@ export function assessParam(
 		return {
 			signature,
 			risk: 'high',
+			kind: 'withdrawal',
 			reason:
 				'Account-balance withdrawal — authorizes the contract to take up to its limit from your account balance. Check the limit argument; a limit near your full balance is dangerous.',
 		};
 
-	if (typeName && isCapability(typeName))
+	if (typeName && isCapability(typeName)) {
+		// Borrowed immutably: the Cap only proves authority for THIS call. It
+		// isn't transferred and can't be mutated, and every admin entry point
+		// needs one — so it's a note, not a risk.
+		if (sig.reference === 'immutable')
+			return {
+				signature,
+				risk: 'info',
+				kind: 'capability',
+				reason:
+					'Capability borrowed by reference — this is a Cap-gated (privileged) call. The capability itself is not transferred or modified.',
+			};
 		return {
 			signature,
 			risk: 'high',
+			kind: 'capability',
 			reason:
-				'Capability passed — grants the contract privileged authority.',
+				sig.reference === 'mutable'
+					? 'Mutable capability reference — the contract can modify the capability object itself.'
+					: 'Capability passed by value — the capability object is surrendered to the contract.',
 		};
+	}
 
 	if (sig.reference === 'mutable' && typeName)
 		return {
 			signature,
 			risk: 'medium',
+			kind: 'object',
 			reason:
 				'Mutable object reference — the object’s contents can be changed by the contract.',
 		};
@@ -224,14 +254,21 @@ export interface CallRisk {
 	params: AssessedParam[];
 	/** Highest risk across params. */
 	overall: ParamRisk;
-	/** Count of high-risk params (drainable coins / capabilities). */
+	/** Count of high-risk params. */
 	highCount: number;
+	/** High-risk params that hand over SPEND power — coins/balances by value or
+	 *  by `&mut`, and account-balance withdrawals. These are what "unbounded
+	 *  authorization" means; capabilities are counted separately. */
+	drainCount: number;
+	/** Capability params, borrowed (`risk: 'info'`) or surrendered (`'high'`). */
+	capabilityCount: number;
 }
 
 const RANK: Record<ParamRisk, number> = {
 	none: 0,
-	medium: 1,
-	high: 2,
+	info: 1,
+	medium: 2,
+	high: 3,
 };
 
 export function assessCall(
@@ -252,9 +289,23 @@ export function assessCall(
 	});
 	let overall: ParamRisk = 'none';
 	let highCount = 0;
+	let drainCount = 0;
+	let capabilityCount = 0;
 	for (const p of params) {
 		if (RANK[p.risk] > RANK[overall]) overall = p.risk;
 		if (p.risk === 'high') highCount++;
+		if (
+			p.risk === 'high' &&
+			(p.kind === 'coin' || p.kind === 'withdrawal')
+		)
+			drainCount++;
+		if (p.kind === 'capability') capabilityCount++;
 	}
-	return { params, overall, highCount };
+	return {
+		params,
+		overall,
+		highCount,
+		drainCount,
+		capabilityCount,
+	};
 }
