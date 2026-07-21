@@ -32,7 +32,7 @@ const WALRUS_EPOCHS = 53;
 // Walrus upload relays. Writing slivers directly from the browser to every
 // storage node is fragile (node availability + CORS) and fails with "Too many
 // failures while writing blob to nodes". The relay offloads that fan-out; the
-// client pays it a tiny tip (capped below) from the proposer's own wallet.
+// client pays it a tip (capped below) from the proposer's own wallet.
 const WALRUS_UPLOAD_RELAY: Record<string, string> = {
 	mainnet: 'https://upload-relay.mainnet.walrus.space',
 	testnet: 'https://upload-relay.testnet.walrus.space',
@@ -64,9 +64,16 @@ export function useArchiveToWalrus() {
 						host:
 							WALRUS_UPLOAD_RELAY[network] ??
 							WALRUS_UPLOAD_RELAY.testnet,
-						// Max tip (MIST) the relay may charge; it auto-determines
+						// Max tip (MIST) the relay may charge; the SDK derives
 						// the actual amount from the relay's tip-config.
-						sendTip: { max: 1_000 },
+						// mainnet prices it at 40 MIST per KiB of *encoded*
+						// size, and encoding adds a constant
+						// n_shards^2 * 64 B = 64 MB floor, so even a 1-byte
+						// blob costs ~2.58M MIST (0.0026 SUI). 0.01 SUI covers
+						// archives up to ~40 MB while still capping the loss if
+						// the relay ever reprices or is swapped for a hostile
+						// endpoint. (testnet is a flat 105 MIST.)
+						sendTip: { max: 10_000_000 },
 					},
 				}),
 			);
